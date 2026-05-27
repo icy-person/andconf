@@ -1,6 +1,6 @@
 {
     "log": {
-        "loglevel": "warning"
+        "loglevel": "none" 
     },
     "inbounds": [
         {
@@ -19,15 +19,64 @@
             "streamSettings": {
                 "network": "ws",
                 "wsSettings": {
-                    "path": "/fast-game"
+                    "path": "/fast-game",
+                    "headers": {
+                        "Host": ""
+                    }
+                },
+                "sockopt": {
+                    "tcpFastOpen": true,
+                    "tproxy": "off"
                 }
+            },
+            "sniffing": {
+                "enabled": true,
+                "destOverride": ["http", "tls"]
             }
         }
     ],
     "outbounds": [
         {
             "protocol": "freedom",
-            "settings": {}
+            "settings": {
+                "domainStrategy": "UseIP" 
+            },
+            "streamSettings": {
+                "sockopt": {
+                    "tcpFastOpen": true,
+                    "mark": 255
+                }
+            }
+        },
+        {
+            "protocol": "blackhole",
+            "settings": {},
+            "tag": "blocked"
         }
-    ]
+    ],
+    "routing": {
+        "domainStrategy": "IPIfNonMatch",
+        "rules": [
+            {
+                "type": "field",
+                "ip": ["geoip:private"],
+                "outboundTag": "blocked"
+            }
+        ]
+    },
+    "policy": {
+        "levels": {
+            "0": {
+                "handshake": 2,
+                "connIdle": 120,
+                "uplinkOnly": 2,
+                "downlinkOnly": 5,
+                "bufferSize": 16 
+            }
+        },
+        "system": {
+            "statsInboundUplink": true,
+            "statsInboundDownlink": true
+        }
+    }
 }
