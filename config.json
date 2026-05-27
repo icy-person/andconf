@@ -1,0 +1,33 @@
+{
+    "log": {
+        "loglevel": "warning"
+    },
+    "inbounds": [
+        {
+            "port": 8888,
+            "protocol": "vless",
+            "settings": {
+                "clients": [
+                    {
+                        "id": "18f9720c-c68e-4a6c-940a-5c3f350c3d9a",
+                        "level": 0,
+                        "email": "gamer@gapgpt"
+                    }
+                ],
+                "decryption": "none"
+            },
+            "streamSettings": {
+                "network": "ws",
+                "wsSettings": {
+                    "path": "/fast-game"
+                }
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "protocol": "freedom",
+            "settings": {}
+        }
+    ]
+}
