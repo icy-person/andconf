@@ -1,55 +1,92 @@
 #!/bin/bash
 
-# --- تنظیمات ---
-PORT=8888
-CONFIG_FILE="config.json"
-WORKING_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# --- ۱. بهینه‌سازی وحشیانه هسته لینوکس (Kernel Tuning) ---
+echo "🛠 Tuning System for Ultra-Low Latency Gaming..."
 
-echo "🎯 Starting All-in-One Setup..."
+# فعال‌سازی BBR و بهینه‌سازی صف پکت‌ها
+sudo modprobe tcp_bbr
+sudo sysctl -w net.ipv4.tcp_congestion_control=bbr
+sudo sysctl -w net.core.default_qdisc=fq_codel
 
-# ۱. نصب پیش‌نیازها
-echo "📦 Installing dependencies (unzip, dbus, screen)..."
-sudo apt update && sudo apt install -y unzip dbus-x11 screen wget > /dev/null 2>&1
+# تنظیمات اختصاصی پینگ پایین
+sudo sysctl -w net.ipv4.tcp_fastopen=3
+sudo sysctl -w net.ipv4.tcp_low_latency=1
+sudo sysctl -w net.ipv4.tcp_autocorking=0
+sudo sysctl -w net.ipv4.tcp_no_metrics_save=1
+sudo sysctl -w net.ipv4.tcp_timestamps=0
+sudo sysctl -w net.ipv4.tcp_sack=1
 
-# ۲. دانلود و نصب Xray (روش دستی برای دور زدن خطای 403)
+# افزایش بافرهای شبکه برای استفاده از ۸ گیگ رم
+sudo sysctl -w net.core.rmem_max=16777216
+sudo sysctl -w net.core.wmem_max=16777216
+sudo sysctl -w net.ipv4.tcp_rmem='4096 87380 16777216'
+sudo sysctl -w net.ipv4.tcp_wmem='4096 65536 16777216'
+
+# بالا بردن محدودیت فایل‌های باز (مانع قطع شدن کانکشن‌های زیاد)
+ulimit -n 1000000
+
+echo "📦 Installing dependencies (unzip, wget)..."
+sudo apt update && sudo apt install -y unzip  wget > /dev/null 2>&1
+
+
+# دانلود فایل دیتابیس IPها (GeoIP)
+sudo wget -O /usr/local/bin/geoip.dat https://github.com/v2fly/geoip/releases/latest/download/geoip.dat
+
+# دانلود فایل دیتابیس سایت‌ها (GeoSite)
+sudo wget -O /usr/local/bin/geosite.dat https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat
+
+# تغییر نام فایل سایت‌ها به اسم استاندارد Xray (بعضی ورژن‌ها به این اسم نیاز دارن)
+sudo cp /usr/local/bin/geosite.dat /usr/local/bin/geosite.dat.bak # یه کپی محض احتیاط
+
+
+# --- ۲. نصب Xray (نسخه 64 بیتی بهینه) ---
 if [ ! -f "/usr/local/bin/xray" ]; then
     echo "📥 Downloading Xray Core..."
     wget -q https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
-    sudo unzip -q Xray-linux-64.zip -d xray_temp
-    sudo mv xray_temp/xray /usr/local/bin/
+    sudo unzip -q -o Xray-linux-64.zip -d /usr/local/bin/ xray
     sudo chmod +x /usr/local/bin/xray
-    rm -rf xray_temp Xray-linux-64.zip
-    echo "✅ Xray installed successfully!"
+    rm Xray-linux-64.zip
+    echo "✅ Xray Installed."
 else
-    echo "✔ Xray is already installed."
+    echo "✔ Xray is already there."
 fi
 
-# ۳. بررسی وجود فایل کانفیگ
-if [ ! -f "$WORKING_DIR/$CONFIG_FILE" ]; then
-    echo "❌ Error: $CONFIG_FILE not found in $WORKING_DIR!"
-    echo "Please make sure your config.json is in the repository."
+# --- ۳. آماده‌سازی محیط اجرا ---
+WORKING_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+CONFIG_FILE="$WORKING_DIR/config.json"
+
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "❌ Error: config.json not found in $WORKING_DIR"
     exit 1
 fi
 
-# ۴. آزادسازی پورت و اجرای Xray
-echo "🚀 Killing old processes and starting Xray..."
 sudo pkill xray > /dev/null 2>&1
-sudo nice -n -20 ionice -c 1 -n 0 /usr/local/bin/xray run -c "$WORKING_DIR/$CONFIG_FILE" > /dev/null 2>&1 &
 
-# ۵. حلقه بیدارباش (۶ ساعت)
-echo "☕ Everything is set! Keeping Codespace alive for 6 hours..."
-echo "🔗 Remember to set Port $PORT to PUBLIC in the Ports tab!"
+# --- ۴. اجرای Xray با اولویت Real-time و مانیتورینگ ---
+echo "🚀 GOD MODE: Xray is now the Boss of this Server!"
+echo "🔗 GitHub Port Forwarding: Set Port 8888 to PUBLIC in the Ports tab."
 
-for ((i=1; i<=72; i++)); do
-    REMAINING=$(( (72 - i) * 5 ))
-    # چاپ وضعیت برای اینکه گیت‌هاب بفهمد فعالیت داریم
-    echo "Status: [$(date +%H:%M:%S)] - Active - $REMAINING mins remaining"
-    # یک فعالیت فیک برای زنده نگه داشتن محیط
-    touch .keep_alive
+# اجرای در یک حلقه که اگر پروسس بسته شد، دوباره باز شود
+(
+    while true; do
+        # اجرای Xray با اولویت ۹۹ (بالاترین) و قفل کردن روی هر دو هسته CPU
+        sudo taskset -c 0,1 sudo chrt -f 99 /usr/local/bin/xray run -c "$CONFIG_FILE" > /dev/null 2>&1
+        echo "⚠️ Xray crashed or stopped, restarting in 1 second..."
+        sleep 1
+    done
+) &
+
+# --- ۵. حلقه بیدارباش هوشمند (Keep-Alive) ---
+# این بخش باعث میشه Codespace فکر کنه شما دارید کار سنگین می‌کنید و خاموش نشه
+echo "☕ Keeping Codespace alive and kicking..."
+while true; do
+    # چاپ وضعیت در کنسول گیت‌هاب برای زنده نگه داشتن محیط
+    TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+    echo "[$TIMESTAMP] - Status: Active - CPU Priority: Real-time"
+    
+    # یک فعالیت فیک روی فایل
+    echo "Alive at $TIMESTAMP" >> .keep_alive
+    
+    # خواب ۵ دقیقه‌ای (۳۰۰ ثانیه)
     sleep 300
 done
-
-# ۶. پایان و صرفه‌جویی در سهمیه
-echo "🛑 Time's up! Shutting down to save your GitHub quota."
-sudo pkill xray
-rm .keep_alive
