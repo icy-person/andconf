@@ -1,54 +1,65 @@
 {
-    "log": { "loglevel": "none" },
-    "inbounds": [
-        {
-            "port": 8888,
-            "protocol": "vless",
-            "settings": {
-                "clients": [
-                    {
-                        "id": "18f9720c-c68e-4a6c-940a-5c3f350c3d9a",
-                        "level": 0
-                    }
-                ],
-                "decryption": "none"
-            },
-            "streamSettings": {
-                "network": "grpc",
-                "grpcSettings": {
-                    "serviceName": "fast-game",
-                    "multiMode": true
-                },
-                "sockopt": {
-                    "tcpFastOpen": true,
-                    "tcpNoDelay": true,
-                    "mark": 255
-                }
-            }
+  "log": {
+    "loglevel": "none" 
+  },
+  "inbounds": [
+    {
+      "port": 8888,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "18f9720c-c68e-4a6c-940a-5c3f350c3d9a",
+            "level": 0
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "grpc",
+        "grpcSettings": {
+          "serviceName": "fast-game",
+          "multiMode": true,
+          "idle_timeout": 15,
+          "health_check_timeout": 5,
+          "permit_without_stream": true
+        },
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpNoDelay": true,
+          "mark": 255
         }
-    ],
-    "outbounds": [
-        {
-            "protocol": "freedom",
-            "settings": { "domainStrategy": "UseIP" },
-            "streamSettings": {
-                "sockopt": {
-                    "tcpFastOpen": true,
-                    "tcpNoDelay": true,
-                    "mark": 255
-                }
-            }
-        }
-    ],
-    "policy": {
-        "levels": {
-            "0": {
-                "handshake": 2,
-                "connIdle": 120,
-                "uplinkOnly": 1,
-                "downlinkOnly": 1,
-                "bufferSize": 0
-            }
-        }
+      }
     }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "settings": {
+        "domainStrategy": "UseIP"
+      },
+      "streamSettings": {
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpNoDelay": true,
+          "mark": 255
+        }
+      }
+    }
+  ],
+  "policy": {
+    "levels": {
+      "0": {
+        "handshake": 1,
+        "connIdle": 60,
+        "uplinkOnly": 0,
+        "downlinkOnly": 0,
+        "bufferSize": 4
+      }
+    },
+    "system": {
+      "statsInboundUplink": false,
+      "statsInboundDownlink": false
+    }
+  }
 }
