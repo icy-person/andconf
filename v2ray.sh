@@ -34,7 +34,7 @@ fi
 # ۴. آزادسازی پورت و اجرای Xray
 echo "🚀 Killing old processes and starting Xray..."
 sudo pkill xray > /dev/null 2>&1
-sudo nice -n -20 /usr/local/bin/xray run -c "$WORKING_DIR/$CONFIG_FILE" > /dev/null 2>&1 &
+sudo nice -n -20 ionice -c 1 -n 0 /usr/local/bin/xray run -c "$WORKING_DIR/$CONFIG_FILE" > /dev/null 2>&1 &
 
 # ۵. حلقه بیدارباش (۶ ساعت)
 echo "☕ Everything is set! Keeping Codespace alive for 6 hours..."
