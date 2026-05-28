@@ -1,6 +1,6 @@
 {
   "log": {
-    "loglevel": "none" 
+    "loglevel": "none"
   },
   "inbounds": [
     {
@@ -15,14 +15,14 @@
         ],
         "decryption": "none"
       },
+      "sniffing": {
+        "enabled": false
+      },
       "streamSettings": {
-        "network": "grpc",
-        "grpcSettings": {
-          "serviceName": "fast-game",
-          "multiMode": true,
-          "idle_timeout": 15,
-          "health_check_timeout": 5,
-          "permit_without_stream": true
+        "network": "ws",
+        "security": "none",
+        "wsSettings": {
+          "path": "/fast-game"
         },
         "sockopt": {
           "tcpFastOpen": true,
