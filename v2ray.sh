@@ -13,7 +13,7 @@ sudo sysctl -w net.ipv4.tcp_fastopen=3
 sudo sysctl -w net.ipv4.tcp_low_latency=1
 sudo sysctl -w net.ipv4.tcp_autocorking=0
 sudo sysctl -w net.ipv4.tcp_no_metrics_save=1
-sudo sysctl -w net.ipv4.tcp_timestamps=0
+sudo sysctl -w net.ipv4.tcp_timestamps=1
 sudo sysctl -w net.ipv4.tcp_sack=1
 
 # افزایش بافرهای شبکه برای استفاده از ۸ گیگ رم
