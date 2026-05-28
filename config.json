@@ -1,6 +1,6 @@
 {
     "log": {
-        "loglevel": "none" 
+        "loglevel": "none"
     },
     "inbounds": [
         {
@@ -10,8 +10,7 @@
                 "clients": [
                     {
                         "id": "18f9720c-c68e-4a6c-940a-5c3f350c3d9a",
-                        "level": 0,
-                        "email": "gamer@gapgpt"
+                        "level": 0
                     }
                 ],
                 "decryption": "none"
@@ -19,19 +18,16 @@
             "streamSettings": {
                 "network": "ws",
                 "wsSettings": {
-                    "path": "/fast-game",
-                    "headers": {
-                        "Host": ""
-                    }
+                    "path": "/fast-game"
                 },
                 "sockopt": {
                     "tcpFastOpen": true,
-                    "tproxy": "off"
+                    "tcpNoDelay": true,
+                    "mark": 255
                 }
             },
             "sniffing": {
-                "enabled": true,
-                "destOverride": ["http", "tls"]
+                "enabled": false
             }
         }
     ],
@@ -39,23 +35,18 @@
         {
             "protocol": "freedom",
             "settings": {
-                "domainStrategy": "UseIP" 
+                "domainStrategy": "AsIs"
             },
             "streamSettings": {
                 "sockopt": {
                     "tcpFastOpen": true,
-                    "mark": 255
+                    "tcpNoDelay": true
                 }
             }
-        },
-        {
-            "protocol": "blackhole",
-            "settings": {},
-            "tag": "blocked"
         }
     ],
     "routing": {
-        "domainStrategy": "IPIfNonMatch",
+        "domainStrategy": "AsIs",
         "rules": [
             {
                 "type": "field",
@@ -68,15 +59,15 @@
         "levels": {
             "0": {
                 "handshake": 2,
-                "connIdle": 120,
-                "uplinkOnly": 2,
-                "downlinkOnly": 5,
-                "bufferSize": 16 
+                "connIdle": 300,
+                "uplinkOnly": 1,
+                "downlinkOnly": 1,
+                "bufferSize": 0
             }
         },
         "system": {
-            "statsInboundUplink": true,
-            "statsInboundDownlink": true
+            "statsInboundUplink": false,
+            "statsInboundDownlink": false
         }
     }
 }
