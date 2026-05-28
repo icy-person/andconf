@@ -30,17 +30,6 @@ ulimit -n 1000000
 echo "📦 Installing dependencies (unzip, wget)..."
 sudo apt update && sudo apt install -y unzip  wget > /dev/null 2>&1
 
-
-# دانلود فایل دیتابیس IPها (GeoIP)
-sudo wget -O /usr/local/bin/geoip.dat https://github.com/v2fly/geoip/releases/latest/download/geoip.dat
-
-# دانلود فایل دیتابیس سایت‌ها (GeoSite)
-sudo wget -O /usr/local/bin/geosite.dat https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat
-
-# تغییر نام فایل سایت‌ها به اسم استاندارد Xray (بعضی ورژن‌ها به این اسم نیاز دارن)
-sudo cp /usr/local/bin/geosite.dat /usr/local/bin/geosite.dat.bak # یه کپی محض احتیاط
-
-
 # --- ۲. نصب Xray (نسخه 64 بیتی بهینه) ---
 if [ ! -f "/usr/local/bin/xray" ]; then
     echo "📥 Downloading Xray Core..."
