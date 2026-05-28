@@ -51,10 +51,10 @@
     "levels": {
       "0": {
         "handshake": 1,
-        "connIdle": 45,
+        "connIdle": 60,
         "uplinkOnly": 0,
         "downlinkOnly": 0,
-        "bufferSize": 2
+        "bufferSize": 4
       }
     },
     "system": {
