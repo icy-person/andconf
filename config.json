@@ -41,8 +41,7 @@
       "streamSettings": {
         "sockopt": {
           "tcpFastOpen": true,
-          "tcpNoDelay": true,
-          "mark": 255
+          "tcpNoDelay": true
         }
       }
     }
@@ -54,7 +53,7 @@
         "connIdle": 60,
         "uplinkOnly": 0,
         "downlinkOnly": 0,
-        "bufferSize": 4
+        "bufferSize": 2
       }
     },
     "system": {
